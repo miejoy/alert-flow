@@ -54,7 +54,7 @@ public struct ButtonInfo: Identifiable {
         self.action = action
     }
     
-    static func cancelButton(with title: String) -> Self {
+    public static func cancelButton(with title: String) -> Self {
         .init(title: title, role: .cancel) { }
     }
 }
