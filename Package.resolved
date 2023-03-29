@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "data-flow",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/miejoy/data-flow.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "cb6f4dbd9115686e2917781904aba20ebb3e46f8"
+      }
+    },
+    {
+      "identity" : "view-flow",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/miejoy/view-flow.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "959ba9bcf6a916b735add82ce014e19d9d4a7172"
+      }
+    }
+  ],
+  "version" : 2
+}
