@@ -32,7 +32,7 @@ public struct AlertInfo {
     public var arrButtons: [ButtonInfo]
     public var arrTextFields: [TextFieldInfo]
     
-    public init(title: String, message: String, alertType: AlertType, arrButtons: [ButtonInfo], arrTextFields: [TextFieldInfo]) {
+    public init(title: String, message: String, alertType: AlertType, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
         self.title = title
         self.message = message
         self.alertType = alertType
@@ -52,6 +52,10 @@ public struct ButtonInfo: Identifiable {
         self.title = title
         self.role = role
         self.action = action
+    }
+    
+    static func cancelButton(with title: String) -> Self {
+        .init(title: title, role: .cancel) { }
     }
 }
 
