@@ -44,7 +44,10 @@ public struct AlertState: FullSceneSharableState {
                 case .dismissTopAlert:
                     newAlertInfo = state.storage.getTopAlertAfterRemoveTopAlert()
                 case .addInnerStore(let newStore):
-                    state.storage.innerAlertStores.last?.alertInfo = nil
+                    if state.storage.innerAlertStores.last?.alertInfo != nil {
+                        // 这里在展示 alert 的时候又 present 一个新的界面，需要避免
+                        state.storage.innerAlertStores.last?.alertInfo = nil
+                    }
                     state.storage.innerAlertStores.append(newStore)
                     newAlertInfo = state.storage.getTopAlert()
                     topStoreChange = true
