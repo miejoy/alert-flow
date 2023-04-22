@@ -40,7 +40,7 @@ public struct AlertFlowView<Content: View>: View {
                 Text(alertState.alertInfo?.message ?? "")
             }
             .onDisappear {
-                if (!isPresented) {
+                if (alertState.level > 0 && !isPresented) {
                     Store<AlertState>.shared(on: sceneId).apply(action: .inner(.removeInnerStoreOnLevel(alertState.level)))
                 }
             }
