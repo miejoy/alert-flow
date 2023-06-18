@@ -10,6 +10,9 @@ import DataFlow
 import ViewFlow
 import SwiftUI
 
+/// 注意：SwiftUI 的 alert 使用代码消失存在问题，消失后不能自动弹出新弹窗，
+/// 目前消失和更新功能均不能使用，普通弹窗和弱弹窗也不能使用，
+/// 只对外公开一个弹窗方法，内部使用强弹窗
 extension Store where State == AlertState {
     
     /// 显示普通弹窗
@@ -21,25 +24,6 @@ extension Store where State == AlertState {
     /// - Returns: 返回弹窗唯一标识
     @discardableResult
     public func showAlert(
-        _ title: String?,
-        _ message: String? = nil,
-        _ buttons: [ButtonInfo] = [],
-        _ textFields: [TextFieldInfo] = []
-    ) -> UUID {
-        let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .normal, arrButtons: buttons, arrTextFields: textFields)
-        send(action: .showAlert(alertInfo))
-        return alertInfo.id
-    }
-    
-    /// 显示强弹窗
-    ///
-    /// - Parameter title: 弹窗标题
-    /// - Parameter message: 弹窗消息
-    /// - Parameter buttons: 弹窗按钮
-    /// - Parameter textFields: 弹窗输入框
-    /// - Returns: 返回弹窗唯一标识
-    @discardableResult
-    public func showStrongAlert(
         _ title: String?,
         _ message: String? = nil,
         _ buttons: [ButtonInfo] = [],
@@ -58,7 +42,26 @@ extension Store where State == AlertState {
     /// - Parameter textFields: 弹窗输入框
     /// - Returns: 返回弹窗唯一标识
     @discardableResult
-    public func showWeakAlert(
+    func showStrongAlert(
+        _ title: String?,
+        _ message: String? = nil,
+        _ buttons: [ButtonInfo] = [],
+        _ textFields: [TextFieldInfo] = []
+    ) -> UUID {
+        let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .strong, arrButtons: buttons, arrTextFields: textFields)
+        send(action: .showAlert(alertInfo))
+        return alertInfo.id
+    }
+    
+    /// 显示强弹窗
+    ///
+    /// - Parameter title: 弹窗标题
+    /// - Parameter message: 弹窗消息
+    /// - Parameter buttons: 弹窗按钮
+    /// - Parameter textFields: 弹窗输入框
+    /// - Returns: 返回弹窗唯一标识
+    @discardableResult
+    func showWeakAlert(
         _ title: String?,
         _ message: String? = nil,
         _ buttons: [ButtonInfo] = [],
@@ -73,7 +76,7 @@ extension Store where State == AlertState {
     ///
     /// - Parameter alertId: 需要销毁弹窗的 id
     /// - Returns: Void
-    public func dismissAlert(with alertId: UUID) {
+    func dismissAlert(with alertId: UUID) {
         send(action: .dismissAlert(with: alertId))
     }
     
@@ -83,7 +86,7 @@ extension Store where State == AlertState {
     /// - Parameter viewPath: 当前标记的界面路径
     /// - Parameter name: 中断名称
     /// - Returns: 返回关联中断的绑定属性
-    public func bindingWithInterrupt(_ binding: Binding<Bool>, _ viewPath: ViewPath, _ name: String? = nil) -> Binding<Bool> {
+    func bindingWithInterrupt(_ binding: Binding<Bool>, _ viewPath: ViewPath, _ name: String? = nil) -> Binding<Bool> {
         let interruptInfo = InterruptInfo(viewPath: viewPath, name: name)
         return .init {
             let value = binding.wrappedValue

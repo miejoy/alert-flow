@@ -20,24 +20,29 @@ public enum AlertType {
 
 /// 弹窗信息
 public struct AlertInfo {
+    /// 弹窗唯一标识
     public let id = UUID()
     /// 标题
-    public let title: String
+    public var title: String
     /// 消息
-    public let message: String
-    /// 是否是强弹窗
-    public let alertType: AlertType
+    public var message: String
+    /// 弹窗类型，暂时不公开弹窗类型，对外只有强弹窗
+    let alertType: AlertType
     
     /// 弹窗按钮，可以为空，为空时也会有 OK 按钮
     public var arrButtons: [ButtonInfo]
     public var arrTextFields: [TextFieldInfo]
     
-    public init(title: String, message: String, alertType: AlertType, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
+    init(title: String, message: String, alertType: AlertType, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
         self.title = title
         self.message = message
         self.alertType = alertType
         self.arrButtons = arrButtons
         self.arrTextFields = arrTextFields
+    }
+    
+    public init(title: String, message: String, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
+        self.init(title: title, message: message, alertType: .strong, arrButtons: arrButtons, arrTextFields: arrTextFields)
     }
 }
 
@@ -80,5 +85,44 @@ public struct InterruptInfo: Identifiable {
     public init(viewPath: ViewPath, name: String? = nil) {
         self.viewPath = viewPath
         self.name = name
+    }
+}
+
+// SwiftUI alert 不支持动态更新弹窗，这里暂时不使用
+struct AlertUpdateInfo {
+    /// 弹窗唯一标识
+    let id: UUID
+    /// 标题
+    let title: String?
+    /// 消息
+    let message: String?
+    
+    /// 弹窗按钮，可以为空，为空时也会有 OK 按钮
+    var arrButtons: [ButtonInfo]?
+    var arrTextFields: [TextFieldInfo]?
+    
+    init(id: UUID, title: String?, message: String? = nil, arrButtons: [ButtonInfo]? = nil, arrTextFields: [TextFieldInfo]? = nil) {
+        self.id = id
+        self.title = title
+        self.message = message
+        self.arrButtons = arrButtons
+        self.arrTextFields = arrTextFields
+    }
+}
+
+extension AlertInfo {
+    mutating func update(with updateInfo: AlertUpdateInfo) {
+        if let title = updateInfo.title {
+            self.title = title
+        }
+        if let message = updateInfo.message {
+            self.message = message
+        }
+        if let arrButtons = updateInfo.arrButtons {
+            self.arrButtons = arrButtons
+        }
+        if let arrTextFields = updateInfo.arrTextFields {
+            self.arrTextFields = arrTextFields
+        }
     }
 }

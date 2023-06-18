@@ -46,10 +46,11 @@ public struct AlertAction: Action {
     }
     
     /// 生成弹窗消失事件，一般弹窗在用户点击时就会消失，这种代码消失需要自己记录 uuid
+    /// 注意：SwiftUI 的 alert 使用代码消失存在问题，暂时不公开
     ///
     /// - Parameter uuid: 需要消失弹框的 uuid
     /// - Returns: 对于事件
-    public static func dismissAlert(with uuid: UUID) -> Self {
+    static func dismissAlert(with uuid: UUID) -> Self {
         return .init(action: .dismiss(uuid))
     }
 }

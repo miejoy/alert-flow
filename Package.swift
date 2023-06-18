@@ -32,6 +32,10 @@ let package = Package(
             ]),
         .testTarget(
             name: "AlertFlowTests",
-            dependencies: ["AlertFlow"]),
+            dependencies: [
+                "AlertFlow",
+                .product(name: "XCTViewFlow", package: "view-flow")
+            ]
+        ),
     ]
 )

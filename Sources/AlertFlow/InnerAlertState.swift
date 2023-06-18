@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  InnerAlertState.swift
 //  
 //
 //  Created by 黄磊 on 2023/3/27.
@@ -15,6 +15,7 @@ enum InnerAlertAction: Action {
     case none
     case present(AlertInfo)
     case dismiss
+    case dismissByView // 暂时不使用
 }
 
 /// 弹窗状态
@@ -25,14 +26,18 @@ struct InnerAlertState: StorableState, ActionBindable, ReducerLoadableState {
     /// 是否显示弹窗
     var isShow: Bool {
         get {
-            alertInfo != nil
+            displayAlertInfo != nil
         }
     }
     
+    /// 当前展示 level
     var level: UInt
     
     /// 弹窗信息
     var alertInfo: AlertInfo? = nil
+    
+    /// 弹窗信息
+    var displayAlertInfo: AlertInfo? = nil
     
     static func loadReducers(on store: Store<InnerAlertState>) {
         store.registerDefault { state, action in
@@ -40,13 +45,36 @@ struct InnerAlertState: StorableState, ActionBindable, ReducerLoadableState {
             case .none: break
             case .present(let alertInfo):
                 state.alertInfo = alertInfo
+                if state.displayAlertInfo == nil {
+                    state.displayAlertInfo = alertInfo
+                } else {
+                    state.displayAlertInfo = nil
+                }
             case .dismiss:
                 state.alertInfo = nil
+                state.displayAlertInfo = nil
+            case .dismissByView:
+                if let alertInfo = state.alertInfo {
+                    if let displayAlertInfo = state.displayAlertInfo {
+                        if alertInfo.id != displayAlertInfo.id {
+                            // 不相同，需要更新 displayAlertInfo
+                            state.displayAlertInfo = alertInfo
+                            return
+                        }
+                    } else {
+                        state.displayAlertInfo = alertInfo
+                        return
+                    }
+                }
+                // 其他情况相当于 dismiss
+                state.alertInfo = nil
+                state.displayAlertInfo = nil
             }
         }
     }
 }
 
+/// 内部弹窗状态包装器，只在内部使用
 @propertyWrapper
 struct InnerAlertWrapper : DynamicProperty {
     
@@ -80,6 +108,7 @@ struct InnerAlertWrapper : DynamicProperty {
     }
 }
 
+/// 内部弹窗状态包装器使用的存储器
 final class InnerAlertWrapperStorage: ObservableObject {
     let level: UInt
     @Published

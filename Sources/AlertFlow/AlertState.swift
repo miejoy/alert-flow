@@ -21,6 +21,21 @@ public struct AlertState: FullSceneSharableState {
     public init() {
     }
     
+    /// 顶部显示 alert
+    public func getTopAlert() -> AlertInfo? {
+        storage.getTopAlert()
+    }
+    
+    /// 是否有任何东西正在显示，包含中断内容
+    public var haveAnythingInShow: Bool {
+        !storage.arrStrongAlerts.isEmpty || !storage.arrNormalAlerts.isEmpty || !storage.mapInterrupt.isEmpty || storage.weakAlertId != nil
+    }
+    
+    /// 是否包含 弹窗
+    public func containAlert(with uuid: UUID) -> Bool {
+        storage.mapAlerts[uuid] != nil
+    }
+    
     public static func loadReducers(on store: DataFlow.Store<AlertState>) {
         store.registerDefault { state, action in
             let oldAlertInfo: AlertInfo? = state.storage.innerAlertStores.last?.alertInfo
@@ -156,6 +171,7 @@ class AlertStorage {
         return getTopAlert()
     }
     
+    /// 获取当前可用的顶骨 alert
     func getTopAlert() -> AlertInfo? {
         if let alertId = arrStrongAlerts.last {
             if let alertInfo = mapAlerts[alertId] {
