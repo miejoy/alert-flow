@@ -20,7 +20,7 @@ public enum AlertEvent {
 }
 
 public protocol AlertMonitorOberver: AnyObject {
-    func receivePresentEvent(_ event: AlertEvent)
+    func receiveAlertEvent(_ event: AlertEvent)
 }
 
 /// 弹窗存储器监听器
@@ -57,7 +57,7 @@ public final class AlertMonitor {
     @usableFromInline
     func record(event: AlertEvent) {
         guard !arrObservers.isEmpty else { return }
-        arrObservers.forEach { $0.observer?.receivePresentEvent(event) }
+        arrObservers.forEach { $0.observer?.receiveAlertEvent(event) }
     }
     
     @usableFromInline
@@ -69,7 +69,7 @@ public final class AlertMonitor {
             return
             #endif
         }
-        arrObservers.forEach { $0.observer?.receivePresentEvent(.fatalError(message)) }
+        arrObservers.forEach { $0.observer?.receiveAlertEvent(.fatalError(message)) }
     }
 }
 
