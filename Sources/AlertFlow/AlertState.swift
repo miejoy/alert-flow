@@ -27,9 +27,7 @@ public struct AlertState: FullSceneSharableState {
     }
     
     /// 是否有任何东西正在显示，包含中断内容
-    public var haveAnythingInShow: Bool {
-        !storage.arrStrongAlerts.isEmpty || !storage.arrNormalAlerts.isEmpty || !storage.mapInterrupt.isEmpty || storage.weakAlertId != nil
-    }
+    public var haveAnythingInShow: Bool = false
     
     /// 是否包含 弹窗
     public func containAlert(with uuid: UUID) -> Bool {
@@ -85,6 +83,9 @@ public struct AlertState: FullSceneSharableState {
                     topInnerStore?.apply(action: .dismiss)
                 }
             }
+            
+            let storage = state.storage
+            state.haveAnythingInShow = !storage.arrStrongAlerts.isEmpty || !storage.arrNormalAlerts.isEmpty || !storage.mapInterrupt.isEmpty || storage.weakAlertId != nil
         }
     }
 }
