@@ -10,9 +10,6 @@ import DataFlow
 import ViewFlow
 import SwiftUI
 
-/// 注意：SwiftUI 的 alert 使用代码消失存在问题，消失后不能自动弹出新弹窗，
-/// 目前消失和更新功能均不能使用，普通弹窗和弱弹窗也不能使用，
-/// 只对外公开一个弹窗方法，内部使用强弹窗
 extension Store where State == AlertState {
     
     /// 显示普通弹窗
@@ -26,10 +23,10 @@ extension Store where State == AlertState {
     public func showAlert(
         _ title: String?,
         _ message: String? = nil,
-        _ buttons: [ButtonInfo] = [],
-        _ textFields: [TextFieldInfo] = []
+        _ buttons: [AlertButtonInfo] = [],
+        _ textFields: [AlertTextFieldInfo] = []
     ) -> UUID {
-        let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .strong, arrButtons: buttons, arrTextFields: textFields)
+        let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .normal, arrButtons: buttons, arrTextFields: textFields)
         send(action: .showAlert(alertInfo))
         return alertInfo.id
     }
@@ -42,18 +39,18 @@ extension Store where State == AlertState {
     /// - Parameter textFields: 弹窗输入框
     /// - Returns: 返回弹窗唯一标识
     @discardableResult
-    func showStrongAlert(
+    public func showStrongAlert(
         _ title: String?,
         _ message: String? = nil,
-        _ buttons: [ButtonInfo] = [],
-        _ textFields: [TextFieldInfo] = []
+        _ buttons: [AlertButtonInfo] = [],
+        _ textFields: [AlertTextFieldInfo] = []
     ) -> UUID {
         let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .strong, arrButtons: buttons, arrTextFields: textFields)
         send(action: .showAlert(alertInfo))
         return alertInfo.id
     }
     
-    /// 显示强弹窗
+    /// 显示弱弹窗
     ///
     /// - Parameter title: 弹窗标题
     /// - Parameter message: 弹窗消息
@@ -61,22 +58,25 @@ extension Store where State == AlertState {
     /// - Parameter textFields: 弹窗输入框
     /// - Returns: 返回弹窗唯一标识
     @discardableResult
-    func showWeakAlert(
+    public func showWeakAlert(
         _ title: String?,
         _ message: String? = nil,
-        _ buttons: [ButtonInfo] = [],
-        _ textFields: [TextFieldInfo] = []
+        _ buttons: [AlertButtonInfo] = [],
+        _ textFields: [AlertTextFieldInfo] = []
     ) -> UUID? {
         let alertInfo = AlertInfo(title: title ?? "", message: message ?? "", alertType: .weak, arrButtons: buttons, arrTextFields: textFields)
         send(action: .showAlert(alertInfo))
-        return alertInfo.id
+        if self.state.storage.weakAlertId == alertInfo.id {
+            return alertInfo.id
+        }
+        return nil
     }
     
     /// 销毁对应 alertId 的弹窗
     ///
     /// - Parameter alertId: 需要销毁弹窗的 id
     /// - Returns: Void
-    func dismissAlert(with alertId: UUID) {
+    public func dismissAlert(with alertId: UUID) {
         send(action: .dismissAlert(with: alertId))
     }
     
@@ -86,21 +86,33 @@ extension Store where State == AlertState {
     /// - Parameter viewPath: 当前标记的界面路径
     /// - Parameter name: 中断名称
     /// - Returns: 返回关联中断的绑定属性
-    func bindingWithInterrupt(_ binding: Binding<Bool>, _ viewPath: ViewPath, _ name: String? = nil) -> Binding<Bool> {
+    public func bindingWithInterrupt(_ binding: Binding<Bool>, _ viewPath: ViewPath, _ name: String? = nil) -> Binding<Bool> {
         let interruptInfo = InterruptInfo(viewPath: viewPath, name: name)
         return .init {
             let value = binding.wrappedValue
-            if value {
-                self.send(action: .init(action: .interrupt(.add(interruptInfo))))
+            let oldValue = self.containInterrupt(with: interruptInfo.id)
+            if oldValue != value {
+                if value {
+                    self.dispatch(action: .init(action: .interrupt(.add(interruptInfo))))
+                } else {
+                    self.dispatch(action: .init(action: .interrupt(.remove(interruptInfo.id))))
+                }
             }
             return value
         } set: { newValue in
-            if !newValue {
-                self.send(action: .init(action: .interrupt(.remove(interruptInfo.id))))
+            if binding.wrappedValue != newValue {
+                if newValue {
+                    self.dispatch(action: .init(action: .interrupt(.add(interruptInfo))))
+                } else {
+                    self.dispatch(action: .init(action: .interrupt(.remove(interruptInfo.id))))
+                }
             }
             binding.wrappedValue = newValue
         }
     }
+    
+    
+    // MARK: - private
     
     /// 获取 Inner Present Store
     func innerAlertStoreOnLevel(_ level: UInt) -> Store<InnerAlertState> {
@@ -113,10 +125,11 @@ extension Store where State == AlertState {
             let newStore = Store<InnerAlertState>.box(newState)
             self.observe(store: newStore) { [weak self] new, old in
                 guard let self = self else { return }
-                if old.alertInfo != nil && new.alertInfo == nil {
+                guard let oldAlertInfo = old.alertInfo else { return }
+                if new.alertInfo == nil {
                     // 弹窗消失
                     if new.level == self.storage.innerAlertStores.count - 1 {
-                        self.apply(action: .inner(.dismissTopAlert))
+                        self.apply(action: .inner(.dismissTopAlert(oldAlertInfo)))
                     } else {
                         // 存在错误，只有顶部 alert 才可以消失
                         AlertMonitor.shared.fatalError("Dismiss alert at level '\(new.level)' failed. Not the top level '\(self.storage.innerAlertStores.count)'")
@@ -131,5 +144,9 @@ extension Store where State == AlertState {
         AlertMonitor.shared.fatalError("Get inner alert store on level '\(level)' failed. Store not exist")
         let newState = InnerAlertState(level: level)
         return .box(newState)
+    }
+    
+    func containInterrupt(with interruptId: String) -> Bool {
+        state.storage.mapInterrupt[interruptId] != nil
     }
 }

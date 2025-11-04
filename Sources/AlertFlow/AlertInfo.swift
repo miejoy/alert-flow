@@ -19,35 +19,96 @@ public enum AlertType {
 }
 
 /// 弹窗信息
-public struct AlertInfo {
+public struct AlertInfo: Identifiable {
     /// 弹窗唯一标识
     public let id = UUID()
     /// 标题
     public var title: String
     /// 消息
     public var message: String
-    /// 弹窗类型，暂时不公开弹窗类型，对外只有强弹窗
-    let alertType: AlertType
+    /// 弹窗类型
+    public let alertType: AlertType
     
     /// 弹窗按钮，可以为空，为空时也会有 OK 按钮
-    public var arrButtons: [ButtonInfo]
-    public var arrTextFields: [TextFieldInfo]
+    public var arrButtons: [AlertButtonInfo]
+    public var arrTextFields: [AlertTextFieldInfo]
     
-    init(title: String, message: String, alertType: AlertType, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
+    /// 取消回调
+    public var cancelCallback: () -> Void
+    
+    var contentMaker: (AlertInfo) -> AnyView
+    
+    init(
+        title: String,
+        message: String,
+        alertType: AlertType = .normal,
+        arrButtons: [AlertButtonInfo] = [],
+        arrTextFields: [AlertTextFieldInfo] = [],
+        cancelCallback: @escaping () -> Void = { },
+        contentMaker: ((AlertInfo) -> AnyView)? = nil
+    ) {
         self.title = title
         self.message = message
         self.alertType = alertType
         self.arrButtons = arrButtons
         self.arrTextFields = arrTextFields
+        self.cancelCallback = cancelCallback
+        if let contentMaker = contentMaker {
+            self.contentMaker = contentMaker
+        } else {
+            self.contentMaker = { alertInfo in
+                AnyView(
+                    Group {
+                        ForEach(alertInfo.arrTextFields) { textField in
+                            TextField(textField.title, text: textField.text)
+                        }
+                        ForEach(alertInfo.arrButtons) { button in
+                            Button(button.title, role: button.role, action: button.action)
+                        }
+                    }
+                )
+            }
+        }
     }
     
-    public init(title: String, message: String, arrButtons: [ButtonInfo] = [], arrTextFields: [TextFieldInfo] = []) {
-        self.init(title: title, message: message, alertType: .strong, arrButtons: arrButtons, arrTextFields: arrTextFields)
+    public init(
+        title: String,
+        message: String = "",
+        alertType: AlertType = .normal,
+        arrButtons: [AlertButtonInfo] = [],
+        arrTextFields: [AlertTextFieldInfo] = [],
+        cancelCallback: @escaping () -> Void = { }
+    ) {
+        self.init(title: title,
+                  message: message,
+                  alertType: alertType,
+                  arrButtons: arrButtons,
+                  arrTextFields: arrTextFields,
+                  cancelCallback: cancelCallback,
+                  contentMaker: nil
+        )
+    }
+    
+    public init<Content: View>(
+        title: String,
+        message: String,
+        @ViewBuilder contentMaker: @escaping (AlertInfo) -> Content,
+        alertType: AlertType = .normal,
+        cancelCallback: @escaping () -> Void = { }
+    ) {
+        self.init(title: title,
+                  message: message,
+                  alertType: alertType,
+                  arrButtons: [],
+                  arrTextFields: [],
+                  cancelCallback: cancelCallback,
+                  contentMaker: { AnyView(contentMaker($0))}
+        )
     }
 }
 
 /// 弹窗按钮信息
-public struct ButtonInfo: Identifiable {
+public struct AlertButtonInfo: Identifiable {
     public let id = UUID()
     public let title: String
     public let role: ButtonRole?
@@ -64,8 +125,34 @@ public struct ButtonInfo: Identifiable {
     }
 }
 
+public protocol AlertResult {
+    static var cancel: Self { get }
+}
+
+enum TestResult: AlertResult {
+    case cancel
+}
+
+/// 带结果弹窗按钮信息
+public struct AlertResultButtonInfo<Result:AlertResult>: Identifiable {
+    public let id = UUID()
+    public let title: String
+    public let role: ButtonRole?
+    public let result: Result
+    
+    public init(title: String, result: Result = .cancel, role: ButtonRole? = nil) {
+        self.title = title
+        self.role = role
+        self.result = result
+    }
+    
+    public static func cancelButton(with title: String) -> Self {
+        .init(title: title, result: .cancel, role: .cancel)
+    }
+}
+
 /// 弹窗输入框信息
-public struct TextFieldInfo: Identifiable {
+public struct AlertTextFieldInfo: Identifiable {
     public let id = UUID()
     public let title: String
     public let text: Binding<String>
@@ -78,15 +165,18 @@ public struct TextFieldInfo: Identifiable {
 
 /// 弹窗打断信息
 public struct InterruptInfo: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let viewPath: ViewPath
     public let name: String?
     
     public init(viewPath: ViewPath, name: String? = nil) {
         self.viewPath = viewPath
         self.name = name
+        self.id = "\(viewPath.description):\(name ?? "")"
     }
 }
+
+// MARK: - Unuse
 
 // SwiftUI alert 不支持动态更新弹窗，这里暂时不使用
 struct AlertUpdateInfo {
@@ -98,10 +188,10 @@ struct AlertUpdateInfo {
     let message: String?
     
     /// 弹窗按钮，可以为空，为空时也会有 OK 按钮
-    var arrButtons: [ButtonInfo]?
-    var arrTextFields: [TextFieldInfo]?
+    var arrButtons: [AlertButtonInfo]?
+    var arrTextFields: [AlertTextFieldInfo]?
     
-    init(id: UUID, title: String?, message: String? = nil, arrButtons: [ButtonInfo]? = nil, arrTextFields: [TextFieldInfo]? = nil) {
+    init(id: UUID, title: String?, message: String? = nil, arrButtons: [AlertButtonInfo]? = nil, arrTextFields: [AlertTextFieldInfo]? = nil) {
         self.id = id
         self.title = title
         self.message = message

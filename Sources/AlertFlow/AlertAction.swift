@@ -13,14 +13,14 @@ public struct AlertAction: Action {
     
     enum InnerAction {
         case none
-        case dismissTopAlert
+        case dismissTopAlert(AlertInfo)
         case addInnerStore(Store<InnerAlertState>)
         case removeInnerStoreOnLevel(UInt)
     }
     
     enum InterruptAction {
         case add(InterruptInfo)
-        case remove(UUID)
+        case remove(String)
     }
     
     /// 内部事件

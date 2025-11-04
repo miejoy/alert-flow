@@ -54,8 +54,8 @@ public struct AlertState: FullSceneSharableState {
             case .inner(let innerAction):
                 switch innerAction {
                 case .none: break
-                case .dismissTopAlert:
-                    newAlertInfo = state.storage.getTopAlertAfterRemoveTopAlert()
+                case .dismissTopAlert(let alertInfo):
+                    newAlertInfo = state.storage.getTopAlertAfterRemoveTopAlert(alertInfo)
                 case .addInnerStore(let newStore):
                     if state.storage.innerAlertStores.last?.alertInfo != nil {
                         // 这里在展示 alert 的时候又 present 一个新的界面，需要避免
@@ -80,14 +80,16 @@ public struct AlertState: FullSceneSharableState {
                     topInnerStore?.apply(action: .present(newAlertInfo))
                     AlertMonitor.shared.record(event: .showAlert(newAlertInfo))
                 } else {
-                    topInnerStore?.apply(action: .dismiss)
+                    if let oldAlertInfo = oldAlertInfo {
+                        topInnerStore?.apply(action: .dismissByCode(oldAlertInfo))
+                    }
                 }
             }
             
             let storage = state.storage
             state.haveAnythingInShow = !storage.arrStrongAlerts.isEmpty || !storage.arrNormalAlerts.isEmpty || !storage.mapInterrupt.isEmpty || storage.weakAlertId != nil
         }
-    }
+    }    
 }
 
 /// 弹窗数据存储器
@@ -97,7 +99,7 @@ class AlertStorage {
     /// 强弹窗，不可被中断，也不可被其他弹窗覆盖，包括其他强弹窗
     var arrStrongAlerts: [UUID] = []
     /// 中断列表
-    var mapInterrupt: [UUID:InterruptInfo] = [:]
+    var mapInterrupt: [String:InterruptInfo] = [:]
     /// 普通弹窗，可被中断，也可被其他弹窗覆盖，包括其他普通弹窗
     var arrNormalAlerts: [UUID] = []
     /// 弱弹窗 ID
@@ -112,10 +114,12 @@ class AlertStorage {
             mapAlerts[alertInfo.id] = alertInfo
             // 强弹窗不能中断其他强弹窗，所以插在最底部
             arrStrongAlerts.insert(alertInfo.id, at: 0)
+            removeWeakAlertIfHave()
         case .normal:
             mapAlerts[alertInfo.id] = alertInfo
             // 普通弹窗插在最后面，可以覆盖其他普通弹窗
             arrNormalAlerts.append(alertInfo.id)
+            removeWeakAlertIfHave()
             // 判断一下是否有中断，有的话记录一下
             if !mapInterrupt.isEmpty {
                 AlertMonitor.shared.record(event: .showAlertFailedWithInterrupt(alertInfo, mapInterrupt))
@@ -138,6 +142,16 @@ class AlertStorage {
         return getTopAlert()
     }
     
+    func removeWeakAlertIfHave() {
+        if let haveWeakAlertId = weakAlertId {
+            if let weakAlertInfo = mapAlerts[haveWeakAlertId] {
+                weakAlertInfo.cancelCallback()
+                mapAlerts.removeValue(forKey: haveWeakAlertId)
+            }
+            weakAlertId = nil
+        }
+    }
+    
     func getTopAlertAfterRemoveAlert(with alertId: UUID) -> AlertInfo? {
         mapAlerts.removeValue(forKey: alertId)
         return getTopAlert()
@@ -148,28 +162,18 @@ class AlertStorage {
         return getTopAlert()
     }
     
-    func getTopAlertAfterRemoveInterrupt(_ interruptId: UUID) -> AlertInfo? {
+    func getTopAlertAfterRemoveInterrupt(_ interruptId: String) -> AlertInfo? {
         mapInterrupt.removeValue(forKey: interruptId)
         return getTopAlert()
     }
     
-    func getTopAlertAfterRemoveTopAlert() -> AlertInfo? {
-        var topAlertId: UUID? = nil
-        if let last = arrStrongAlerts.last {
-            topAlertId = last
-            _ = arrStrongAlerts.popLast()
-        } else if let last = arrNormalAlerts.last {
-            topAlertId = last
-            _ = arrNormalAlerts.popLast()
-        } else if let theWeakAlertId = weakAlertId {
-            topAlertId = theWeakAlertId
-            weakAlertId = nil
+    func getTopAlertAfterRemoveTopAlert(_ alertInfo: AlertInfo) -> AlertInfo? {
+        let topAlert = getTopAlert()
+        if topAlert?.id == alertInfo.id {
+            mapAlerts.removeValue(forKey: alertInfo.id)
+            return getTopAlert()
         }
-        if let topAlertId = topAlertId {
-            mapAlerts.removeValue(forKey: topAlertId)
-        }
-        
-        return getTopAlert()
+        return topAlert
     }
     
     /// 获取当前可用的顶骨 alert

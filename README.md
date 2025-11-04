@@ -7,13 +7,13 @@ AlertFlow 是自定义 RSV(Resource & State & View) 设计模式中 State 层的
 [![Swift](https://github.com/miejoy/alert-flow/actions/workflows/test.yml/badge.svg)](https://github.com/miejoy/alert-flow/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/miejoy/alert-flow/branch/main/graph/badge.svg)](https://codecov.io/gh/miejoy/alert-flow)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Swift](https://img.shields.io/badge/swift-5.7-brightgreen.svg)](https://swift.org)
+[![Swift](https://img.shields.io/badge/swift-5.10-brightgreen.svg)](https://swift.org)
 
 ## 依赖
 
-- iOS 15.0+ / macOS 12+
-- Xcode 14.0+
-- Swift 5.7+
+- iOS 17.0+ / macOS 16+
+- Xcode 15.0+
+- Swift 5.10+
 
 ## 简介
 
@@ -121,9 +121,37 @@ struct AlertRootView: View {
 }
 ```
 
-### 使用代码消失弹窗
+### 显示异步弹窗并获取结果
 
-注意：SwiftUI 的 alert 使用代码消失存在问题，暂时不公开
+```swift
+import SwiftUI
+import AlertFlow
+
+struct AlertRootView: View {
+    enum Result: AlertResult {
+        case cancel
+    }
+
+    // 读取环境中的弹窗管理器
+    @Environment(\.alertManager) var alertManager
+
+    var body: some View {
+        VStack {
+            Button {
+                Task {
+                    let result: Result = await alertManager.showAlert("This alert result will return while click")
+                    print("result: \(result)")
+                }
+            } label: {
+                Text("Show Normal Alert")
+            }
+        }
+    }
+}
+```
+
+
+### 使用代码消失弹窗
 
 ```swift
 import SwiftUI

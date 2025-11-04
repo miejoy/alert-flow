@@ -12,7 +12,7 @@ import ViewFlow
 /// 弹窗存储器变化事件
 public enum AlertEvent {
     case showAlert(AlertInfo)
-    case showAlertFailedWithInterrupt(AlertInfo, [UUID:InterruptInfo])
+    case showAlertFailedWithInterrupt(AlertInfo, [String:InterruptInfo])
     case showAlertFailedWithStrongExist(AlertInfo, [AlertInfo])
     case showAlertFailedWithNormalExist(AlertInfo, [AlertInfo])
     case showAlertFailedWithWeakExist(AlertInfo, AlertInfo)

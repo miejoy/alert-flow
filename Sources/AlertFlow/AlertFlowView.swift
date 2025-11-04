@@ -14,7 +14,6 @@ import ViewFlow
 public struct AlertFlowView<Content: View>: View {
     
     @Environment(\.sceneId) var sceneId
-    @Environment(\.isPresented) var isPresented
     @Environment(\.presentationMode) var presentationMode
     @ViewBuilder var content: Content
     @InnerAlertWrapper var alertState: InnerAlertState
@@ -31,12 +30,7 @@ public struct AlertFlowView<Content: View>: View {
                 isPresented: $alertState.bindingDefault(of: \.isShow, { ($0 ? .none : .dismiss) }),
                 presenting: alertState.displayAlertInfo
             ) { alertInfo in
-                ForEach(alertInfo.arrTextFields) { textField in
-                    TextField(textField.title, text: textField.text)
-                }
-                ForEach(alertInfo.arrButtons) { button in
-                    Button(button.title, role: button.role, action: button.action)
-                }
+                alertInfo.contentMaker(alertInfo)
             } message: { alertInfo in
                 Text(alertInfo.message)
             }
