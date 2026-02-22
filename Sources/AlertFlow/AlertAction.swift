@@ -11,20 +11,20 @@ import DataFlow
 /// 弹窗事件
 public struct AlertAction: Action {
     
-    enum InnerAction {
+    enum InnerAction: Sendable {
         case none
         case dismissTopAlert(AlertInfo)
         case addInnerStore(Store<InnerAlertState>)
         case removeInnerStoreOnLevel(UInt)
     }
     
-    enum InterruptAction {
+    enum InterruptAction: Sendable {
         case add(InterruptInfo)
         case remove(String)
     }
     
     /// 内部事件
-    enum ContentAction {
+    enum ContentAction: Sendable {
         case show(AlertInfo)
         case dismiss(UUID)
         case interrupt(InterruptAction)

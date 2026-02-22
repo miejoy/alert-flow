@@ -145,8 +145,9 @@ struct InnerAlertState: StorableState, ActionBindable, ReducerLoadableState {
 }
 
 /// 内部弹窗状态包装器，只在内部使用
+@MainActor
 @propertyWrapper
-struct InnerAlertWrapper : DynamicProperty {
+struct InnerAlertWrapper : @preconcurrency DynamicProperty {
     
     @ObservedObject
     var storage: InnerAlertWrapperStorage
@@ -179,6 +180,7 @@ struct InnerAlertWrapper : DynamicProperty {
 }
 
 /// 内部弹窗状态包装器使用的存储器
+@MainActor
 final class InnerAlertWrapperStorage: ObservableObject {
     let level: UInt
     @Published

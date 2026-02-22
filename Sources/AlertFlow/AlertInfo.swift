@@ -9,7 +9,7 @@ import SwiftUI
 import ViewFlow
 
 /// 弹窗类型
-public enum AlertType {
+public enum AlertType: Sendable {
     /// 强弹窗，一般用于用户交互弹窗，不可被中断，也不可被其他弹窗覆盖，包括其他强弹窗
     case strong
     /// 普通弹窗，一般用于异步提醒或者推广，可被中断，也可被其他弹窗覆盖，包括其他普通弹窗
@@ -19,7 +19,7 @@ public enum AlertType {
 }
 
 /// 弹窗信息
-public struct AlertInfo: Identifiable {
+public struct AlertInfo: Identifiable, Sendable {
     /// 弹窗唯一标识
     public let id = UUID()
     /// 标题
@@ -34,9 +34,9 @@ public struct AlertInfo: Identifiable {
     public var arrTextFields: [AlertTextFieldInfo]
     
     /// 取消回调
-    public var cancelCallback: () -> Void
+    public var cancelCallback: @Sendable () -> Void
     
-    var contentMaker: (AlertInfo) -> AnyView
+    var contentMaker: @Sendable (AlertInfo) -> AnyView
     
     init(
         title: String,
@@ -44,8 +44,8 @@ public struct AlertInfo: Identifiable {
         alertType: AlertType = .normal,
         arrButtons: [AlertButtonInfo] = [],
         arrTextFields: [AlertTextFieldInfo] = [],
-        cancelCallback: @escaping () -> Void = { },
-        contentMaker: ((AlertInfo) -> AnyView)? = nil
+        cancelCallback: @Sendable @escaping () -> Void = { },
+        contentMaker: (@Sendable (AlertInfo) -> AnyView)? = nil
     ) {
         self.title = title
         self.message = message
@@ -77,7 +77,7 @@ public struct AlertInfo: Identifiable {
         alertType: AlertType = .normal,
         arrButtons: [AlertButtonInfo] = [],
         arrTextFields: [AlertTextFieldInfo] = [],
-        cancelCallback: @escaping () -> Void = { }
+        cancelCallback: @Sendable @escaping () -> Void = { }
     ) {
         self.init(title: title,
                   message: message,
@@ -89,12 +89,12 @@ public struct AlertInfo: Identifiable {
         )
     }
     
-    public init<Content: View>(
+    public init<Content: View & Sendable>(
         title: String,
         message: String,
-        @ViewBuilder contentMaker: @escaping (AlertInfo) -> Content,
+        @ViewBuilder contentMaker: @Sendable @escaping (AlertInfo) -> Content,
         alertType: AlertType = .normal,
-        cancelCallback: @escaping () -> Void = { }
+        cancelCallback: @Sendable @escaping () -> Void = { }
     ) {
         self.init(title: title,
                   message: message,
@@ -108,13 +108,13 @@ public struct AlertInfo: Identifiable {
 }
 
 /// 弹窗按钮信息
-public struct AlertButtonInfo: Identifiable {
+public struct AlertButtonInfo: Identifiable, Sendable {
     public let id = UUID()
     public let title: String
     public let role: ButtonRole?
-    public let action: () -> Void
+    public let action: @Sendable () -> Void
     
-    public init(title: String, role: ButtonRole? = nil, action: @escaping () -> Void) {
+    public init(title: String, role: ButtonRole? = nil, action: @Sendable @escaping () -> Void) {
         self.title = title
         self.role = role
         self.action = action
@@ -125,7 +125,7 @@ public struct AlertButtonInfo: Identifiable {
     }
 }
 
-public protocol AlertResult {
+public protocol AlertResult: Sendable {
     static var cancel: Self { get }
 }
 
@@ -134,7 +134,7 @@ enum TestResult: AlertResult {
 }
 
 /// 带结果弹窗按钮信息
-public struct AlertResultButtonInfo<Result:AlertResult>: Identifiable {
+public struct AlertResultButtonInfo<Result:AlertResult>: Identifiable, Sendable {
     public let id = UUID()
     public let title: String
     public let role: ButtonRole?
@@ -152,7 +152,7 @@ public struct AlertResultButtonInfo<Result:AlertResult>: Identifiable {
 }
 
 /// 弹窗输入框信息
-public struct AlertTextFieldInfo: Identifiable {
+public struct AlertTextFieldInfo: Identifiable, Sendable {
     public let id = UUID()
     public let title: String
     public let text: Binding<String>
@@ -164,7 +164,7 @@ public struct AlertTextFieldInfo: Identifiable {
 }
 
 /// 弹窗打断信息
-public struct InterruptInfo: Identifiable {
+public struct InterruptInfo: Identifiable, Sendable {
     public let id: String
     public let viewPath: ViewPath
     public let name: String?

@@ -22,6 +22,7 @@ public struct AlertState: FullSceneSharableState {
     }
     
     /// 顶部显示 alert
+    @MainActor
     public func getTopAlert() -> AlertInfo? {
         storage.getTopAlert()
     }
@@ -30,6 +31,7 @@ public struct AlertState: FullSceneSharableState {
     public var haveAnythingInShow: Bool = false
     
     /// 是否包含 弹窗
+    @MainActor
     public func containAlert(with uuid: UUID) -> Bool {
         storage.mapAlerts[uuid] != nil
     }
@@ -93,6 +95,7 @@ public struct AlertState: FullSceneSharableState {
 }
 
 /// 弹窗数据存储器
+@MainActor
 class AlertStorage {
     
     var mapAlerts: [UUID:AlertInfo] = [:]

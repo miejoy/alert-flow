@@ -414,7 +414,7 @@ struct AlertStateTests {
     
     // MARK: - cancel callback
     
-    static var s_alertCancelCall = false
+    nonisolated(unsafe) static var s_alertCancelCall = false
     @Test("取消弹窗测试测试")
     func testAlertCancelCallback() {
         // 只有弱弹窗才可以被取消
