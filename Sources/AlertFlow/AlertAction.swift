@@ -39,8 +39,8 @@ public struct AlertAction: Action {
     
     /// 生成弹窗显示事件
     ///
-    /// - Parameter alertInfo: 对应弹窗弹窗
-    /// - Returns: 对于事件
+    /// - Parameter alertInfo: 对应弹窗信息
+    /// - Returns: 对应事件
     public static func showAlert(_ alertInfo: AlertInfo) -> Self {
         return .init(action: .show(alertInfo))
     }
@@ -48,8 +48,8 @@ public struct AlertAction: Action {
     /// 生成弹窗消失事件，一般弹窗在用户点击时就会消失，这种代码消失需要自己记录 uuid
     /// 注意：SwiftUI 的 alert 使用代码消失存在问题，暂时不公开
     ///
-    /// - Parameter uuid: 需要消失弹框的 uuid
-    /// - Returns: 对于事件
+    /// - Parameter uuid: 需要消失弹窗的 uuid
+    /// - Returns: 对应事件
     static func dismissAlert(with uuid: UUID) -> Self {
         return .init(action: .dismiss(uuid))
     }

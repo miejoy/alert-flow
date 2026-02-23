@@ -134,7 +134,7 @@ enum TestResult: AlertResult {
 }
 
 /// 带结果弹窗按钮信息
-public struct AlertResultButtonInfo<Result:AlertResult>: Identifiable, Sendable {
+public struct AlertResultButtonInfo<Result: AlertResult>: Identifiable, Sendable {
     public let id = UUID()
     public let title: String
     public let role: ButtonRole?

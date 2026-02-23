@@ -143,7 +143,7 @@ struct AlertStateTests {
     }
     
     
-    // MARK: - shwo two alert
+    // MARK: - show two alert
     
     @Test("显示两个普通弹窗测试")
     func testShowTwoNormalAlert() {
@@ -415,7 +415,7 @@ struct AlertStateTests {
     // MARK: - cancel callback
     
     nonisolated(unsafe) static var s_alertCancelCall = false
-    @Test("取消弹窗测试测试")
+    @Test("取消弹窗测试")
     func testAlertCancelCallback() {
         // 只有弱弹窗才可以被取消
         let alertManager = Store<AlertState>.shared(on: .custom(#function))
@@ -443,18 +443,18 @@ struct AlertStateTests {
         
         #expect(alertInfo.arrButtons.count == buttons.count)
         if alertInfo.arrButtons.count == buttons.count {
-            for (index, lertButton) in alertInfo.arrButtons.enumerated() {
+            for (index, alertButton) in alertInfo.arrButtons.enumerated() {
                 let rightButton = buttons[index]
-                #expect(lertButton.title == rightButton.title)
+                #expect(alertButton.title == rightButton.title)
             }
         }
         
         #expect(alertInfo.arrTextFields.count == textFields.count)
         if alertInfo.arrTextFields.count == textFields.count {
-            for (index, lertTextField) in alertInfo.arrTextFields.enumerated() {
+            for (index, alertTextField) in alertInfo.arrTextFields.enumerated() {
                 let rightTextField = textFields[index]
-                #expect(lertTextField.title == rightTextField.title)
-                #expect(lertTextField.text.wrappedValue == rightTextField.text.wrappedValue)
+                #expect(alertTextField.title == rightTextField.title)
+                #expect(alertTextField.text.wrappedValue == rightTextField.text.wrappedValue)
             }
         }
     }

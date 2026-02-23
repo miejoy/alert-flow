@@ -40,6 +40,6 @@ public final class AlertMonitor: BaseMonitor<AlertEvent> {
     }
     
     public override func addObserver(_ observer: MonitorObserver) -> AnyCancellable {
-        Swift.fatalError("Only AlertMonitorObserver can observer this monitor")
+        Swift.fatalError("Only AlertMonitorObserver can observe this monitor")
     }
 }

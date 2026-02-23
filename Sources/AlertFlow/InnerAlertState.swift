@@ -98,7 +98,7 @@ struct InnerAlertState: StorableState, ActionBindable, ReducerLoadableState {
                         // 当前正在显示的就是需要显示的
                         return
                     }
-                    // 已显示，需要先小护士
+                    // 已显示，需要先消失
                     state.displayState = .disappearing
                     // 有真正显示的，需要消失
                     DispatchQueue.main.async {
