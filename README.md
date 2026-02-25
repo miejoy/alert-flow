@@ -7,13 +7,13 @@ AlertFlow 是自定义 RSV(Resource & State & View) 设计模式中 State 层的
 [![Swift](https://github.com/miejoy/alert-flow/actions/workflows/test.yml/badge.svg)](https://github.com/miejoy/alert-flow/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/miejoy/alert-flow/branch/main/graph/badge.svg)](https://codecov.io/gh/miejoy/alert-flow)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Swift](https://img.shields.io/badge/swift-5.10-brightgreen.svg)](https://swift.org)
+[![Swift](https://img.shields.io/badge/swift-6.2-brightgreen.svg)](https://swift.org)
 
 ## 依赖
 
-- iOS 17.0+ / macOS 16+
-- Xcode 15.0+
-- Swift 5.10+
+- iOS 17.0+ / macOS 14+
+- Xcode 26.0+
+- Swift 6.2+
 
 ## 简介
 
