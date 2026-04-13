@@ -34,9 +34,9 @@ public struct AlertInfo: Identifiable, Sendable {
     public var arrTextFields: [AlertTextFieldInfo]
     
     /// 取消回调
-    public var cancelCallback: @Sendable () -> Void
+    public var cancelCallback: @MainActor @Sendable () -> Void
     
-    var contentMaker: @Sendable (AlertInfo) -> AnyView
+    var contentMaker: @MainActor @Sendable (AlertInfo) -> AnyView
     
     init(
         title: String,
@@ -44,8 +44,8 @@ public struct AlertInfo: Identifiable, Sendable {
         alertType: AlertType = .normal,
         arrButtons: [AlertButtonInfo] = [],
         arrTextFields: [AlertTextFieldInfo] = [],
-        cancelCallback: @Sendable @escaping () -> Void = { },
-        contentMaker: (@Sendable (AlertInfo) -> AnyView)? = nil
+        cancelCallback: @MainActor @Sendable @escaping () -> Void = { },
+        contentMaker: (@MainActor @Sendable (AlertInfo) -> AnyView)? = nil
     ) {
         self.title = title
         self.message = message
@@ -77,7 +77,7 @@ public struct AlertInfo: Identifiable, Sendable {
         alertType: AlertType = .normal,
         arrButtons: [AlertButtonInfo] = [],
         arrTextFields: [AlertTextFieldInfo] = [],
-        cancelCallback: @Sendable @escaping () -> Void = { }
+        cancelCallback: @MainActor @Sendable @escaping () -> Void = { }
     ) {
         self.init(title: title,
                   message: message,
@@ -92,9 +92,9 @@ public struct AlertInfo: Identifiable, Sendable {
     public init<Content: View & Sendable>(
         title: String,
         message: String,
-        @ViewBuilder contentMaker: @Sendable @escaping (AlertInfo) -> Content,
+        @ViewBuilder contentMaker: @MainActor @Sendable @escaping (AlertInfo) -> Content,
         alertType: AlertType = .normal,
-        cancelCallback: @Sendable @escaping () -> Void = { }
+        cancelCallback: @MainActor @Sendable @escaping () -> Void = { }
     ) {
         self.init(title: title,
                   message: message,
@@ -112,9 +112,9 @@ public struct AlertButtonInfo: Identifiable, Sendable {
     public let id = UUID()
     public let title: String
     public let role: ButtonRole?
-    public let action: @Sendable () -> Void
+    public let action: @MainActor @Sendable () -> Void
     
-    public init(title: String, role: ButtonRole? = nil, action: @Sendable @escaping () -> Void) {
+    public init(title: String, role: ButtonRole? = nil, action: @MainActor @Sendable @escaping () -> Void) {
         self.title = title
         self.role = role
         self.action = action
