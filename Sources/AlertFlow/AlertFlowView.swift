@@ -14,7 +14,7 @@ import ViewFlow
 public struct AlertFlowView<Content: View>: View {
     
     @Environment(\.sceneId) var sceneId
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.isPresented) var isPresented
     @ViewBuilder var content: Content
     @InnerAlertWrapper var alertState: InnerAlertState
     
@@ -35,7 +35,7 @@ public struct AlertFlowView<Content: View>: View {
                 Text(alertInfo.message)
             }
             .onDisappear {
-                if alertState.level > 0 && !presentationMode.wrappedValue.isPresented {
+                if alertState.level > 0 && !isPresented {
                     Store<AlertState>.shared(on: sceneId).apply(action: .inner(.removeInnerStoreOnLevel(alertState.level)))
                 }
             }

@@ -101,20 +101,18 @@ struct InnerAlertState: StorableState, ActionBindable, ReducerLoadableState {
                     // 已显示，需要先消失
                     state.displayState = .disappearing
                     // 有真正显示的，需要消失
-                    DispatchQueue.main.async {
-                        Task {
-                            var transaction = Transaction(animation: nil)
-                            transaction.disablesAnimations = true
-                            withTransaction(transaction) {
-                                store.apply(action: AlertDisplayAction.dismissPrevAlert)
-                            }
-                            
-                            try? await Task.sleep(for: .seconds(disappearingDuration))
-                            
-                            // 这里重新读取一下，主要是可能出现 alertInfo 已经 为空的问题
-                            if let newAlertInfo = store.alertInfo {
-                                store.apply(action: AlertDisplayAction.displayed(newAlertInfo))
-                            }
+                    Task { @MainActor in
+                        var transaction = Transaction(animation: nil)
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) {
+                            store.apply(action: AlertDisplayAction.dismissPrevAlert)
+                        }
+                        
+                        try? await Task.sleep(for: .seconds(disappearingDuration))
+                        
+                        // 这里重新读取一下，主要是可能出现 alertInfo 已经 为空的问题
+                        if let newAlertInfo = store.alertInfo {
+                            store.apply(action: AlertDisplayAction.displayed(newAlertInfo))
                         }
                     }
                 case .disappearing:
@@ -160,16 +158,25 @@ struct InnerAlertWrapper : @preconcurrency DynamicProperty {
     
     var wrappedValue: InnerAlertState {
         get {
-            storage.store!.state
+            guard let store = storage.store else {
+                fatalError("InnerAlertWrapper store is not configured. Ensure update() is called before accessing wrappedValue.")
+            }
+            return store.state
         }
         
         nonmutating set {
-            storage.store!.state = newValue
+            guard let store = storage.store else {
+                fatalError("InnerAlertWrapper store is not configured. Ensure update() is called before accessing wrappedValue.")
+            }
+            store.state = newValue
         }
     }
     
     var projectedValue: Store<InnerAlertState> {
-        storage.store!
+        guard let store = storage.store else {
+            fatalError("InnerAlertWrapper store is not configured. Ensure update() is called before accessing projectedValue.")
+        }
+        return store
     }
     
     func update() {

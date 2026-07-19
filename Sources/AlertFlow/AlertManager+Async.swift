@@ -87,7 +87,7 @@ extension Store where State == AlertState {
                                       alertType: .weak,
                                       arrButtons: arrButtons,
                                       arrTextFields: textFields) {
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     continuation.resume(with: .success(.cancel))
                 }
             }
